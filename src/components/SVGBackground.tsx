@@ -1,8 +1,6 @@
-import Feed from "@/components/Feed";
-import Image from "next/image";
-import { Suspense } from "react";
+import React from "react";
 
-export default function Home() {
+const SVGBackground = ({ children }: { children: React.ReactNode }) => {
   return (
     <section className="relative min-h-screen">
       <svg
@@ -40,19 +38,9 @@ export default function Home() {
           fill="url(#a)"
         />
       </svg>
-      {/* container */}
-      <div className="max-w-6xl mx-auto py-20 flex flex-col justify-center items-center">
-        <h1 className="text-5xl font-black text-center max-w-lg">
-          Discover & Share
-          <br />
-          <span className="orange-text-gradient">AI-Powered Prompts</span>
-        </h1>
-        <Suspense
-          fallback={<div className="text-4xl font-bold">Loading feed...</div>}
-        >
-          <Feed />
-        </Suspense>
-      </div>
+      {children}
     </section>
   );
-}
+};
+
+export default SVGBackground;
