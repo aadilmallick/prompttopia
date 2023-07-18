@@ -22,9 +22,7 @@ const Feed = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await fetch("/api/prompt/all", {
-        next: {
-          revalidate: 10,
-        },
+        cache: "no-store",
       });
       const data = await res.json();
       console.log(data);
