@@ -67,16 +67,17 @@ const Navbar = () => {
   const scrollClass = "bg-white/50 shadow-md backdrop-filter backdrop-blur-lg";
 
   useEffect(() => {
-    const event = window.addEventListener("scroll", () => {
+    const listener = () => {
       const nav = document.querySelector("nav");
       if (window.scrollY > 100) {
         setIsScrolling(true);
       } else {
         setIsScrolling(false);
       }
-    });
+    };
+    window.addEventListener("scroll", listener);
 
-    return () => window.removeEventListener("scroll", event);
+    return () => window.removeEventListener("scroll", listener);
   }, []);
 
   return (
