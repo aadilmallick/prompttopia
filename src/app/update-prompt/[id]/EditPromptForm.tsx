@@ -30,7 +30,7 @@ const EditPromptForm = ({ id }: EditPromptFormProps) => {
     if (!res.ok) {
       throw new Error("Error updating prompt. Do you own this post?");
     }
-    router.push("/");
+    router.replace("/");
   };
 
   useEffect(() => {

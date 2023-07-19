@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { connectDB } from "@/lib/db";
-import Prompt from "@/models/Prompt";
 import User from "@/models/User";
+import Prompt from "@/models/Prompt";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {

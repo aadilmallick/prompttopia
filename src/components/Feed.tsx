@@ -4,6 +4,9 @@ import { Post } from "@/app/create-prompt/page";
 import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
 import { GradientOutlineButton } from "./Buttons";
+import Select from "react-select";
+
+const selectOptions: { value: string; label: string }[] = [];
 
 export interface PromptDoc {
   prompt: string;
@@ -18,17 +21,28 @@ export interface PromptDoc {
 const Feed = () => {
   const [search, setSearch] = useState("");
   const [posts, setPosts] = useState<PromptDoc[]>([]); // [Post
+  const [tagOptionsList, setTagOptionsList] = useState<typeof selectOptions>(
+    []
+  );
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [originalPosts, setOriginalPosts] = useState<PromptDoc[]>([]); // [Post
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setLoading(true);
       const res = await fetch("/api/prompt/all", {
         cache: "no-store",
       });
       const data = await res.json();
-      console.log(data);
+
       setPosts(data.prompts);
+      setOriginalPosts(data.prompts);
+      const fetchedPosts = data.prompts as PromptDoc[];
+      const allTags = getTagsFromPromptDocList(fetchedPosts);
+      setTagOptionsList(allTags.map((tag) => ({ value: tag, label: tag })));
     };
-    fetchPosts();
+    fetchPosts().then(() => setLoading(false));
   }, []);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
@@ -37,19 +51,35 @@ const Feed = () => {
 
   const handleTagClick = (tag: string) => {};
 
-  console.log(search);
-
   return (
     <div className="w-full">
-      <form className="max-w-xl mx-auto bg-white p-4">
-        <input
-          type="text"
-          placeholder="Search"
-          onChange={(e) => setSearch(e.target.value)}
-          value={"brh"}
-          className="border border-gray-300 p-2 rounded-lg w-full"
+      <div className="max-w-xl mx-auto p-4 relative z-10">
+        <Select
+          options={tagOptionsList}
+          onChange={(newvalue) => {
+            const tagList = newvalue.map((tag) => tag.value);
+            setSelectedTags(tagList);
+
+            if (tagList.length === 0) {
+              setPosts(originalPosts);
+              return;
+            }
+            setPosts(
+              originalPosts.filter((post) => {
+                return tagList.some((tag) => post.tags.includes(tag));
+              })
+            );
+          }}
+          isMulti
+          isSearchable
+          noOptionsMessage={() => "Loading tags..."}
         />
-      </form>
+      </div>
+      {loading && (
+        <h1 className={"blue-text-gradient text-2xl font-bold"}>
+          Your feed is loading
+        </h1>
+      )}
       <PromptCardList data={posts} />
     </div>
   );
@@ -76,7 +106,7 @@ export function PromptCardList({
   handleDelete?: HandleDelete;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-8">
       {data.map((prompt) => (
         <div
           key={prompt._id}
@@ -131,6 +161,16 @@ export function PromptCardList({
       ))}
     </div>
   );
+}
+
+function getTagsFromPromptDocList(posts: PromptDoc[]) {
+  const tags = new Set<string>();
+  posts.forEach((post) => {
+    post.tags.forEach((tag) => {
+      tags.add(tag);
+    });
+  });
+  return Array.from(tags);
 }
 
 export default Feed;

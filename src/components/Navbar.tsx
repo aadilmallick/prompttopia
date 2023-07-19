@@ -19,6 +19,7 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 
 const Navbar = () => {
   const [toggle, setToggle] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
   // const [user, setUser] = useState<Session | null>(null);
   // const [loading, setLoading] = useState(true);
   // useEffect(() => {
@@ -63,8 +64,27 @@ const Navbar = () => {
     );
   };
 
+  const scrollClass = "bg-white/50 shadow-md backdrop-filter backdrop-blur-lg";
+
+  useEffect(() => {
+    const event = window.addEventListener("scroll", () => {
+      const nav = document.querySelector("nav");
+      if (window.scrollY > 100) {
+        setIsScrolling(true);
+      } else {
+        setIsScrolling(false);
+      }
+    });
+
+    return () => window.removeEventListener("scroll", event);
+  }, []);
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-10 pt-4">
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 py-4 transition-colors ${
+        isScrolling ? scrollClass : ""
+      }`}
+    >
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         <Link href="/">
           <button className="bg-none border-none orange-text-gradient text-4xl font-black tracking-[-2px] hover:blur-sm transition-all">

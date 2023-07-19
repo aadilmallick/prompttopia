@@ -1,7 +1,9 @@
 export const dynamic = "force-dynamic";
-import Feed from "@/components/Feed";
+// import Feed from "@/components/Feed";
 import Image from "next/image";
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
+
+const Feed = lazy(() => import("@/components/Feed"));
 
 export default function Home() {
   return (

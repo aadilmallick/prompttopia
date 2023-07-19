@@ -1,6 +1,6 @@
 "use client";
 import { Post } from "@/app/create-prompt/page";
-import React from "react";
+import React, { useEffect } from "react";
 import { GradientOutlineButton } from "./Buttons";
 
 export interface PromptFormProps {
@@ -20,6 +20,12 @@ const PromptForm = ({
   console.log(post);
 
   const [curString, setCurString] = React.useState(post.tags.join(",") || "");
+  console.log(curString);
+  console.log(post.tags.join(","));
+
+  useEffect(() => {
+    setCurString(post.tags.join(","));
+  }, []);
   return (
     <form
       onSubmit={handleSubmit}
