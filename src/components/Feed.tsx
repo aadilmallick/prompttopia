@@ -32,7 +32,9 @@ const Feed = () => {
     const fetchPosts = async () => {
       setLoading(true);
       const res = await fetch("/api/prompt/all", {
-        cache: "no-store",
+        next: {
+          revalidate: 60,
+        },
       });
       const data = await res.json();
 
@@ -105,6 +107,7 @@ export function PromptCardList({
   handleEdit?: HandleEdit;
   handleDelete?: HandleDelete;
 }) {
+  if (!data) return <div className="text-4xl font-bold">No data...</div>;
   return (
     <div className="grid grid-cols-3 gap-8">
       {data.map((prompt) => (

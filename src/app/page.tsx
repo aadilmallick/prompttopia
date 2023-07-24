@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+// export const revalidate = 0;
 // import Feed from "@/components/Feed";
 import Image from "next/image";
 import { Suspense, lazy } from "react";
