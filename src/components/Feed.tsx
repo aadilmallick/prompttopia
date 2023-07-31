@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
 import { GradientOutlineButton } from "./Buttons";
 import Select from "react-select";
+import { toast } from "react-toastify";
 
 const selectOptions: { value: string; label: string }[] = [];
 
@@ -32,9 +33,7 @@ const Feed = () => {
     const fetchPosts = async () => {
       setLoading(true);
       const res = await fetch("/api/prompt/all", {
-        next: {
-          revalidate: 60,
-        },
+        cache: "no-cache",
       });
       const data = await res.json();
 
@@ -111,62 +110,93 @@ export function PromptCardList({
   return (
     <div className="grid grid-cols-3 gap-8">
       {data.map((prompt) => (
-        <div
+        <PromptCard
           key={prompt._id}
-          className="glassmorphism p-2 display flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <Image
-                src={prompt.creator.image}
-                width={40}
-                height={40}
-                className="rounded-full"
-                alt="profile picture"
-              />
-              <h3>{prompt.creator.email}</h3>
-            </div>
-            <p>{prompt.prompt}</p>
-          </div>
-          <div className="">
-            <div className="flex flex-wrap space-x-2 text-gray-400 text-sm font-semibold py-2">
-              {prompt.tags.join(" ")}
-            </div>
-            <div className="flex py-2 space-x-2">
-              <GradientOutlineButton
-                onClick={() => navigator.clipboard.writeText(prompt.prompt)}
-              >
-                Copy
-              </GradientOutlineButton>
-              {handleEdit && (
-                <GradientOutlineButton
-                  onClick={() =>
-                    handleEdit({
-                      postId: prompt._id,
-                      prompt: prompt.prompt,
-                      tags: prompt.tags,
-                    })
-                  }
-                >
-                  Edit
-                </GradientOutlineButton>
-              )}
-              {handleDelete && (
-                <GradientOutlineButton
-                  onClick={() => handleDelete({ postId: prompt._id })}
-                >
-                  Delete
-                </GradientOutlineButton>
-              )}
-            </div>
-          </div>
-        </div>
+          prompt={prompt}
+          handleDelete={handleDelete}
+          handleEdit={handleEdit}
+        />
       ))}
     </div>
   );
 }
 
-function getTagsFromPromptDocList(posts: PromptDoc[]) {
+const PromptCard = ({
+  prompt,
+  handleDelete,
+  handleEdit,
+}: {
+  prompt: PromptDoc;
+  handleEdit?: HandleEdit;
+  handleDelete?: HandleDelete;
+}) => {
+  const [readMore, setReadMore] = useState(false);
+
+  return (
+    <div className="glassmorphism p-2 display flex flex-col justify-between">
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <Image
+            src={prompt.creator.image}
+            width={40}
+            height={40}
+            className="rounded-full"
+            alt="profile picture"
+          />
+          <h3>{prompt.creator.email}</h3>
+        </div>
+        <p className={`${readMore ? "" : "line-clamp-3"}`}>{prompt.prompt}</p>
+        <p
+          className="text-orange-400 text-sm font-bold hover:text-orange-600 transition-colors cursor-pointer"
+          onClick={() => {
+            setReadMore(!readMore);
+          }}
+        >
+          read {readMore ? "less" : "more"}
+        </p>
+      </div>
+      <div className="">
+        <div className="flex flex-wrap space-x-2 text-gray-400 text-sm font-semibold py-2">
+          {prompt.tags.join(" ")}
+        </div>
+        <div className="flex py-2 space-x-2">
+          <GradientOutlineButton
+            onClick={() => {
+              navigator.clipboard.writeText(prompt.prompt);
+              toast.success("Copied to clipboard!", {
+                autoClose: 500,
+              });
+            }}
+          >
+            Copy
+          </GradientOutlineButton>
+          {handleEdit && (
+            <GradientOutlineButton
+              onClick={() =>
+                handleEdit({
+                  postId: prompt._id,
+                  prompt: prompt.prompt,
+                  tags: prompt.tags,
+                })
+              }
+            >
+              Edit
+            </GradientOutlineButton>
+          )}
+          {handleDelete && (
+            <GradientOutlineButton
+              onClick={() => handleDelete({ postId: prompt._id })}
+            >
+              Delete
+            </GradientOutlineButton>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export function getTagsFromPromptDocList(posts: PromptDoc[]) {
   const tags = new Set<string>();
   posts.forEach((post) => {
     post.tags.forEach((tag) => {

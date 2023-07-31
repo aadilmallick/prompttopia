@@ -10,7 +10,6 @@ export async function GET(
   try {
     await connectDB();
     const prompts = await Prompt.find({ creator: id }).populate("creator");
-    console.log(prompts);
     return NextResponse.json(prompts);
   } catch (err) {
     console.log(err);

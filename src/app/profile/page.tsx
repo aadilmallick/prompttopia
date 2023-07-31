@@ -1,17 +1,21 @@
 "use client";
-import { PromptCardList, PromptDoc } from "@/components/Feed";
+import {
+  PromptCardList,
+  PromptDoc,
+  getTagsFromPromptDocList,
+} from "@/components/Feed";
 import SVGBackground from "@/components/SVGBackground";
 import useCurrentUser from "@/hooks/useCurrentUser";
-import { redirectUnauthenticatedUsersClient } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
 import { redirect, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import Select from "react-select";
 
 const Profile = () => {
   const { loading, startLoading, user, stopLoading } = useCurrentUser();
   // redirectUnauthenticatedUsersClient();
   const [posts, setPosts] = useState<PromptDoc[]>([]);
+  const [originalPosts, setOriginalPosts] = useState<PromptDoc[]>([]);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -25,6 +29,7 @@ const Profile = () => {
       const data = await res.json();
 
       setPosts(data);
+      setOriginalPosts(data);
 
       // stopLoading();
     }
@@ -71,6 +76,7 @@ const Profile = () => {
         {loading && <h1 className="text-4xl font-bold">Loading...</h1>}
         {!user && !loading && redirect("/")}
         <h1 className="blue-text-gradient text-4xl">Profile</h1>
+        <PromptSearch originalPosts={originalPosts} setPosts={setPosts} />
         <PromptCardList
           data={posts}
           handleDelete={handleDelete}
@@ -78,6 +84,41 @@ const Profile = () => {
         />
       </div>
     </SVGBackground>
+  );
+};
+
+interface PromptSearchProps {
+  originalPosts: PromptDoc[];
+  setPosts: React.Dispatch<React.SetStateAction<PromptDoc[]>>;
+}
+
+const PromptSearch = ({ originalPosts, setPosts }: PromptSearchProps) => {
+  const allTags = getTagsFromPromptDocList(originalPosts);
+  const tagOptionsList = allTags.map((tag) => ({ value: tag, label: tag }));
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  return (
+    <div className="max-w-xl mx-auto p-4 relative z-10">
+      <Select
+        options={tagOptionsList}
+        onChange={(newvalue) => {
+          const tagList = newvalue.map((tag) => tag.value);
+          setSelectedTags(tagList);
+
+          if (tagList.length === 0) {
+            setPosts(originalPosts);
+            return;
+          }
+          setPosts(
+            originalPosts.filter((post) => {
+              return tagList.some((tag) => post.tags.includes(tag));
+            })
+          );
+        }}
+        isMulti
+        isSearchable
+        noOptionsMessage={() => "Loading tags..."}
+      />
+    </div>
   );
 };
 
