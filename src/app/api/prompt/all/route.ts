@@ -3,8 +3,6 @@ import User from "@/models/User";
 import Prompt from "@/models/Prompt";
 import { NextRequest, NextResponse } from "next/server";
 
-export const revalidate = 0;
-
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
